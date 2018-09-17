@@ -60,8 +60,8 @@ func Provision(req ProvisionRequest) (string, error) {
 	config := &container.Config{
 		Image: imageName,
 		ExposedPorts: nat.PortSet{
-			"3000": struct{}{},
-			"5000": struct{}{},
+			"3000": struct{}{}, // expose container port 3000
+			"5000": struct{}{}, // expose container port 5000
 		},
 		StopTimeout: tPtr,
 	}
@@ -70,15 +70,17 @@ func Provision(req ProvisionRequest) (string, error) {
 	}
 
 	hostConfig := &container.HostConfig{
-		// Mounts: []mount.Mount{vMounts},
+		// Bind the student's folder to the container
 		Binds: []string{"/usr/local/share/rhetor/" + req.FS.StudentFSIdentifier + "/mflix-python:/home/project:cached"},
 		PortBindings: nat.PortMap{
+			// Bind container port 3000 to the assigned development port of the student on the host machine
 			"3000": []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
 					HostPort: req.DevPort,
 				},
 			},
+			// Bind container port 5000 to the assigned application port of the student on the host machine
 			"5000": []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
@@ -86,20 +88,22 @@ func Provision(req ProvisionRequest) (string, error) {
 				},
 			},
 		},
+		// Set a maximum memory usage of 2GB
+		// Tuning required to see if 1GB or less is enough?
 		Resources: container.Resources{
 			Memory: memoryLimit,
 		},
 	}
-	resp, err := cli.ContainerCreate(ctx, config, hostConfig, nil, req.FS.StudentID)
+	container, err := cli.ContainerCreate(ctx, config, hostConfig, nil, req.FS.StudentID)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{}); err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-	return resp.ID, nil
+	return container.ID, nil
 }
 
 // Destroy kills and removes the specified container

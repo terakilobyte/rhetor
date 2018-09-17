@@ -81,9 +81,11 @@ func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
 // SaveStudentFilesAWS creates a .tgz file of the student's directory and uploads
 // it to S3
 func (fs *FSManager) SaveStudentFilesAWS(sess *session.Session) error {
+	// init the uploader
 	uploader := s3manager.NewUploader(sess)
 	filePath := "/usr/local/share/rhetor/" + fs.StudentFSIdentifier
 	fileName := filePath + ".tgz"
+	// make a .tgz of the student's directory
 	if err := archiver.TarGz.Make(fileName, []string{filePath}); err != nil {
 		fmt.Println(err.Error())
 		return err
@@ -92,6 +94,7 @@ func (fs *FSManager) SaveStudentFilesAWS(sess *session.Session) error {
 	if err != nil {
 		return fmt.Errorf("failed to open file %q, %v", filePath, err)
 	}
+	// upload to s3
 	result, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String("test-s3-blockstores"),
 		Key:    aws.String(fs.StudentFSIdentifier + ".tgz"),
@@ -100,9 +103,11 @@ func (fs *FSManager) SaveStudentFilesAWS(sess *session.Session) error {
 	if err != nil {
 		return fmt.Errorf("failed to upload file, %v error", err)
 	}
+	// remove student's folder from disk
 	if err := os.RemoveAll("/usr/local/share/rhetor/" + fs.StudentFSIdentifier); err != nil {
 		fmt.Printf("could not remove directory: %v\n", err)
 	}
+	// remove student .tgz from disk
 	os.Remove(fileName)
 	fmt.Println(result.Location)
 	return nil
