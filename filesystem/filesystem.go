@@ -41,10 +41,6 @@ func New(studentID string, course string) (*FSManager, error) {
 	}, nil
 }
 
-func (fs *FSManager) checkStudentFilesAWS(studentID string) (bool, error) {
-	return false, nil
-}
-
 // LoadStudentFilesDisk creates the student's filesystem on disk from their
 // saved .tgz file in S3. If no .tgz file exists, it downloads the default starter
 func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
@@ -68,7 +64,17 @@ func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
 		Key:    aws.String(fs.StudentFSIdentifier + ".tgz"),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to download file, %v", err)
+		if err.Error()[:9] == "NoSuchKey" {
+			n, err = downloader.Download(f, &s3.GetObjectInput{
+				Bucket: aws.String("test-s3-blockstores"),
+				Key:    aws.String(fs.Course + "-starter.tgz"),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to download starter file")
+			}
+		} else {
+			return fmt.Errorf("failed to download file, %v", err)
+		}
 	}
 	fmt.Printf("file downloaded, %d bytes\n", n)
 	if err := archiver.TarGz.Open(path+"/"+fs.StudentFSIdentifier+".tgz", path); err != nil {
