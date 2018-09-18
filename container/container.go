@@ -18,6 +18,7 @@ import (
 // Ports will be mapped in the range of 3000:5000 - 3999:5999
 type ProvisionRequest struct {
 	StudentID string `json:"studentID,omitempty"` // ID of the student
+	UserName  string `json:"username"`            // The student's username
 	DevPort   string `json:"devPort,omitempty"`   // The request port to map from host to container
 	AppPort   string `json:"appPort,omitempty"`   // The request port to map from host to container
 	Course    string `json:"course,omitempty"`    // The course request. This will be used to sync with S3
@@ -29,7 +30,9 @@ type ProvisionRequest struct {
 type DestroyRequest struct {
 	ContainerID string `json:"containerID,omitempty"`
 	StudentID   string `json:"studentID"`
+	UserName    string `json:"username"` // The student's username
 	Port        int    `json:"port"`
+	Course      string `json:"course,omitempty"` // The course request. This will be used to sync with S3
 	FS          *filesystem.FSManager
 	AWS         *session.Session
 }
