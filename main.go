@@ -35,12 +35,13 @@ type APIResponse struct {
 
 // HandleProvisionRequest handles calling the provisioning service
 func HandleProvisionRequest(w http.ResponseWriter, r *http.Request) {
-	fs, err := filesystem.New("terakilobyte", "M220P")
+	var request container.ProvisionRequest
+	_ = json.NewDecoder(r.Body).Decode(&request)
+	fs, err := filesystem.New(request.UserName, request.Course)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var request container.ProvisionRequest
-	_ = json.NewDecoder(r.Body).Decode(&request)
+
 	port := getRandomPort()
 	request.DevPort = strconv.Itoa(port)
 	request.AppPort = strconv.Itoa(port + 2000)
@@ -73,12 +74,13 @@ func HandleProvisionRequest(w http.ResponseWriter, r *http.Request) {
 
 // HandleDestroyRequest handles calling the destroy service
 func HandleDestroyRequest(w http.ResponseWriter, r *http.Request) {
-	fs, err := filesystem.New("terakilobyte", "M220P")
+	var request container.DestroyRequest
+	_ = json.NewDecoder(r.Body).Decode(&request)
+	fs, err := filesystem.New(request.UserName, request.Course)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var request container.DestroyRequest
-	_ = json.NewDecoder(r.Body).Decode(&request)
+
 	request.FS = fs
 	request.AWS = aws
 	var apiResponse APIResponse
