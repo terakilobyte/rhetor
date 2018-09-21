@@ -57,7 +57,7 @@ func Provision(req ProvisionRequest) (string, error) {
 	if err := req.FS.LoadStudentFilesDisk(req.AWS); err != nil {
 		return "", err
 	}
-	imageName := "mflix-python:latest"
+	imageName := "terakilobyte/rhetor:latest"
 	t := 2 // timeout, 2 seconds
 	tPtr := &t
 	config := &container.Config{

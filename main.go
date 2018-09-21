@@ -44,7 +44,7 @@ func HandleProvisionRequest(w http.ResponseWriter, r *http.Request) {
 
 	port := getRandomPort()
 	request.DevPort = strconv.Itoa(port)
-	request.AppPort = strconv.Itoa(port + 2000)
+	request.AppPort = strconv.Itoa(port + portOffset)
 	request.FS = fs
 	request.AWS = aws
 	cid, err := container.Provision(request)
