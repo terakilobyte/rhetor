@@ -22,7 +22,7 @@ type FSManager struct {
 // Init initializes the AWS session and returns the session
 func Init() (*session.Session, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Credentials: credentials.NewSharedCredentials("", "default"),
+		Credentials: credentials.NewSharedCredentials("", os.Getenv("RHETOR_AWS_PROFILE")),
 		Region:      aws.String("us-east-1"),
 	})
 	if err != nil {
@@ -60,13 +60,13 @@ func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
 	}
 	// Write the contents of S3 Object to the file
 	n, err := downloader.Download(f, &s3.GetObjectInput{
-		Bucket: aws.String("test-s3-blockstores"),
+		Bucket: aws.String("rhetor"),
 		Key:    aws.String(fs.StudentFSIdentifier + ".tgz"),
 	})
 	if err != nil {
 		if err.Error()[:9] == "NoSuchKey" {
 			n, err = downloader.Download(f, &s3.GetObjectInput{
-				Bucket: aws.String("test-s3-blockstores"),
+				Bucket: aws.String("rhetor"),
 				Key:    aws.String(fs.Course + "-starter.tgz"),
 			})
 			if err != nil {
@@ -102,7 +102,7 @@ func (fs *FSManager) SaveStudentFilesAWS(sess *session.Session) error {
 	}
 	// upload to s3
 	result, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String("test-s3-blockstores"),
+		Bucket: aws.String("rhetor"),
 		Key:    aws.String(fs.StudentFSIdentifier + ".tgz"),
 		Body:   f,
 	})
