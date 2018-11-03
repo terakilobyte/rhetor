@@ -1,5 +1,14 @@
 # rhetor
 
+When you first clone this repo, you'll need to run the following commands
+from your `$GOPATH/src/github.com/docker` folder.
+
+```
+rm -rf docker/vendor
+rm -rf cli/vendor
+rm -rf distribution/vendor
+```
+
 You will need the MongoDB Training AWS credentials stored in your default location (`~/.aws/...`) and you will need to set the
 environmental variable `DOCKER_API_VERSION` to your Docker API version.
 
