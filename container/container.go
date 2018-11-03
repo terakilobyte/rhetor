@@ -68,9 +68,6 @@ func Provision(req ProvisionRequest) (string, error) {
 		},
 		StopTimeout: tPtr,
 	}
-	if err != nil {
-		return "", err
-	}
 
 	hostConfig := &container.HostConfig{
 		// Bind the student's folder to the container
