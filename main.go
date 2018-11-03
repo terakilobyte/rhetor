@@ -124,5 +124,6 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/provision", HandleProvisionRequest).Methods("POST")
 	router.HandleFunc("/destroy", HandleDestroyRequest).Methods("POST")
+	fmt.Println("Rhetor listening on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
