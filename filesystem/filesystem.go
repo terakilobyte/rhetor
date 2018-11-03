@@ -3,6 +3,7 @@ package filesystem
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -63,6 +64,7 @@ func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
 		Bucket: aws.String("rhetor"),
 		Key:    aws.String(fs.StudentFSIdentifier + ".tgz"),
 	})
+	starterDownloaded := false
 	if err != nil {
 		if err.Error()[:9] == "NoSuchKey" {
 			n, err = downloader.Download(f, &s3.GetObjectInput{
@@ -72,6 +74,7 @@ func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
 			if err != nil {
 				return fmt.Errorf("failed to download starter file")
 			}
+			starterDownloaded = true
 		} else {
 			return fmt.Errorf("failed to download file, %v", err)
 		}
@@ -79,6 +82,10 @@ func (fs *FSManager) LoadStudentFilesDisk(sess *session.Session) error {
 	fmt.Printf("file downloaded, %d bytes\n", n)
 	if err := archiver.TarGz.Open(path+"/"+fs.StudentFSIdentifier+".tgz", path); err != nil {
 		return fmt.Errorf("failed to extract archive, %v", err)
+	}
+	if starterDownloaded {
+		newpath := filepath.Join(path, fs.StudentFSIdentifier)
+		os.Rename(filepath.Join(path, "M220P-starter"), newpath)
 	}
 	os.Remove(path + "/" + fs.StudentFSIdentifier + ".tgz")
 	return nil
@@ -101,7 +108,7 @@ func (fs *FSManager) SaveStudentFilesAWS(sess *session.Session) error {
 		return fmt.Errorf("failed to open file %q, %v", filePath, err)
 	}
 	// upload to s3
-	result, err := uploader.Upload(&s3manager.UploadInput{
+	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String("rhetor"),
 		Key:    aws.String(fs.StudentFSIdentifier + ".tgz"),
 		Body:   f,
@@ -115,6 +122,5 @@ func (fs *FSManager) SaveStudentFilesAWS(sess *session.Session) error {
 	}
 	// remove student .tgz from disk
 	os.Remove(fileName)
-	fmt.Println(result.Location)
 	return nil
 }
